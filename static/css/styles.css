@@ -7,28 +7,30 @@
     --font-primary: 'Outfit', sans-serif;
     --font-secondary: 'Plus Jakarta Sans', sans-serif;
 
-    /* Sleek Harmonious HSL Color System */
-    --bg-dark: #0a0515;
-    --bg-deep: #0f0920;
-    --violet: hsl(262, 80%, 60%);
-    --violet-glow: hsla(262, 80%, 60%, 0.35);
-    --violet-hover: hsl(262, 80%, 65%);
-    --emerald: hsl(145, 80%, 45%);
-    --emerald-glow: hsla(145, 80%, 45%, 0.35);
-    --rose: hsl(352, 85%, 55%);
-    --rose-glow: hsla(352, 85%, 55%, 0.3);
-    --amber: hsl(38, 95%, 50%);
-    --text-primary: #f5f2fa;
-    --text-secondary: #a39cb5;
-    --text-muted: #6e6782;
+    /* Premium Ultra-Light & Glowing HSL Color System */
+    --bg-dark: #f8f9fc;
+    --bg-deep: #f0f2f7;
+    --violet: hsl(252, 82%, 58%);
+    --violet-glow: hsla(252, 82%, 58%, 0.1);
+    --violet-hover: hsl(252, 82%, 64%);
+    --emerald: hsl(150, 72%, 36%);
+    --emerald-glow: hsla(150, 72%, 36%, 0.1);
+    --rose: hsl(355, 78%, 52%);
+    --rose-glow: hsla(355, 78%, 52%, 0.1);
+    --amber: hsl(40, 92%, 45%);
+    
+    /* Sleek Deep Slate Typography for extreme contrast and premium feel */
+    --text-primary: #150f24;
+    --text-secondary: #4a415d;
+    --text-muted: #817897;
 
-    /* Glassmorphism Specs */
-    --glass-bg: rgba(22, 14, 42, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-glow: rgba(162, 120, 255, 0.2);
-    --glass-panel-bg: rgba(15, 8, 30, 0.6);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    --glow-shadow: 0 0 20px rgba(138, 75, 255, 0.15);
+    /* High-Fidelity Light Frosted Glassmorphism Specs */
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.9);
+    --glass-border-glow: rgba(138, 75, 255, 0.35);
+    --glass-panel-bg: rgba(255, 255, 255, 0.45);
+    --glass-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.05), 0 1px 1px 0 rgba(255, 255, 255, 0.8) inset;
+    --glow-shadow: 0 0 30px rgba(138, 75, 255, 0.12);
 
     --radius-sm: 8px;
     --radius-md: 14px;
@@ -66,7 +68,7 @@ body {
     filter: blur(140px);
     z-index: -1;
     pointer-events: none;
-    opacity: 0.45;
+    opacity: 0.25; /* Soft pastel mesh blur */
 }
 
 .bg-glow-1 {
@@ -125,14 +127,14 @@ body {
 }
 
 .app-logo span {
-    background: linear-gradient(135deg, #fff 30%, var(--text-secondary) 100%);
+    background: linear-gradient(135deg, #1e1335 30%, var(--violet) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .icon-glow {
     color: var(--violet);
-    filter: drop-shadow(0 0 8px var(--violet));
+    filter: drop-shadow(0 0 8px var(--violet-glow));
 }
 
 .header-actions {
@@ -146,7 +148,7 @@ body {
     text-align: center;
     color: var(--text-muted);
     font-size: 0.9rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* ==========================================================================
@@ -159,7 +161,7 @@ h1, h2, h3, h4, h5 {
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, #ffffff 10%, #bf9eff 60%, #8a4bff 100%);
+    background: linear-gradient(135deg, #1e1335 0%, #4a15ad 60%, #7c3eff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -361,8 +363,8 @@ label {
 }
 
 input, select {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border);
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(138, 75, 255, 0.15);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 12px 14px;
@@ -374,8 +376,8 @@ input, select {
 input:focus, select:focus {
     outline: none;
     border-color: var(--violet);
-    box-shadow: 0 0 10px rgba(138, 75, 255, 0.25);
-    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 12px rgba(138, 75, 255, 0.15);
+    background-color: #ffffff;
 }
 
 select option {
@@ -432,11 +434,13 @@ select option {
 }
 
 .glass-panel {
-    background: rgba(18, 10, 36, 0.4);
+    background: var(--glass-panel-bg);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
     padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 /* Landing Page Grid */
@@ -603,7 +607,7 @@ select option {
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .copy-input {
@@ -787,9 +791,9 @@ select option {
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background-color: rgba(255,255,255,0.02);
+    background-color: rgba(255, 255, 255, 0.45);
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
 }
 
 .part-info {
@@ -861,9 +865,9 @@ select option {
 }
 
 /* Color gradations for available heatmaps */
-.score-0 { background-color: rgba(255,255,255,0.03); }
-.score-low { background-color: hsla(145, 80%, 45%, 0.2); }
-.score-high { background-color: hsla(145, 80%, 45%, 0.55); }
+.score-0 { background-color: rgba(255, 255, 255, 0.45); }
+.score-low { background-color: hsla(150, 72%, 40%, 0.12); }
+.score-high { background-color: hsla(150, 72%, 40%, 0.35); }
 .score-perfect { 
     background-color: var(--emerald);
     box-shadow: 0 0 8px var(--emerald-glow);
@@ -894,7 +898,7 @@ select option {
 
 .calendar-day {
     aspect-ratio: 1.15;
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(255, 255, 255, 0.45);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     padding: 8px;
@@ -966,33 +970,32 @@ select option {
 
 /* Heatmap intensity overlay classes (updated via JS) */
 .cell-score-perfect .day-heatmap-overlay {
-    background-color: rgba(56, 239, 125, 0.22);
-    box-shadow: inset 0 0 12px rgba(56, 239, 125, 0.25);
-    border: 1px solid rgba(56, 239, 125, 0.4);
+    background-color: hsla(150, 72%, 36%, 0.22);
+    box-shadow: inset 0 0 12px hsla(150, 72%, 36%, 0.1);
+    border: 1px solid hsla(150, 72%, 36%, 0.4);
 }
 .cell-score-perfect .day-number {
-    color: #fff;
-    text-shadow: 0 0 6px rgba(56, 239, 125, 0.8);
+    color: var(--text-primary);
 }
 
 .cell-score-high .day-heatmap-overlay {
-    background-color: rgba(56, 239, 125, 0.14);
-    border: 1px solid rgba(56, 239, 125, 0.2);
+    background-color: hsla(150, 72%, 36%, 0.14);
+    border: 1px solid hsla(150, 72%, 36%, 0.2);
 }
 
 .cell-score-medium .day-heatmap-overlay {
-    background-color: rgba(56, 239, 125, 0.08);
+    background-color: hsla(150, 72%, 36%, 0.08);
 }
 
 .cell-score-low .day-heatmap-overlay {
-    background-color: rgba(56, 239, 125, 0.03);
+    background-color: hsla(150, 72%, 36%, 0.03);
 }
 
 /* Unavailability/Blocked aesthetics (takes precedence) */
 .cell-blocked .day-heatmap-overlay {
-    background-color: rgba(239, 45, 86, 0.1);
-    border: 1px solid rgba(239, 45, 86, 0.15);
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(239, 45, 86, 0.06) 6px, rgba(239, 45, 86, 0.06) 12px);
+    background-color: hsla(355, 78%, 52%, 0.08);
+    border: 1px solid hsla(355, 78%, 52%, 0.15);
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, hsla(355, 78%, 52%, 0.04) 6px, hsla(355, 78%, 52%, 0.04) 12px);
 }
 
 /* Current logged-in Attendee's marked choices outline */
@@ -1025,11 +1028,11 @@ select option {
     left: 50%;
     transform: translateX(-50%) translateY(5px) scale(0.95);
     width: 200px;
-    background-color: #0b0716;
+    background-color: rgba(255, 255, 255, 0.98);
     border: 1px solid var(--glass-border-glow);
     border-radius: var(--radius-sm);
     padding: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    box-shadow: 0 10px 30px rgba(31, 38, 135, 0.08);
     z-index: 100;
     opacity: 0;
     pointer-events: none;
@@ -1045,7 +1048,7 @@ select option {
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid var(--glass-border-glow);
+    border-top: 6px solid rgba(255, 255, 255, 0.98);
 }
 
 .clickable-day:hover .day-tooltip {
@@ -1058,7 +1061,7 @@ select option {
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-primary);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     padding-bottom: 6px;
     margin-bottom: 6px;
 }
@@ -1165,7 +1168,7 @@ select option {
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(255, 255, 255, 0.5);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
 }
@@ -1285,7 +1288,7 @@ select option {
 }
 
 .bg-glass-dark {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .info-row {
@@ -1352,10 +1355,10 @@ select option {
 }
 
 .toast {
-    background: rgba(13, 8, 25, 0.9);
+    background: rgba(255, 255, 255, 0.98);
     border: 1px solid var(--glass-border-glow);
     border-left: 4px solid var(--violet);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 14px 20px;
@@ -1596,14 +1599,14 @@ select option {
         left: 0;
         width: 100vw;
         z-index: 1000;
-        background: rgba(10, 5, 21, 0.95);
+        background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: none;
         border-top: 1px solid var(--glass-border-glow);
         border-radius: var(--radius-md) var(--radius-md) 0 0;
         padding: 12px 20px;
-        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 -8px 30px rgba(31, 38, 135, 0.08);
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -1660,7 +1663,7 @@ select option {
     gap: 12px;
     padding-right: 6px;
     margin-top: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     padding-bottom: 12px;
 }
 
@@ -1711,14 +1714,14 @@ select option {
 }
 
 .chat-other .chat-bubble {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(255, 255, 255, 0.65);
     color: var(--text-primary);
     border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
     border: 1px solid var(--glass-border);
 }
 
 .chat-input-wrapper input {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(255, 255, 255, 0.7);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
@@ -1727,6 +1730,7 @@ select option {
 
 .chat-input-wrapper input:focus {
     border-color: var(--violet);
-    box-shadow: 0 0 10px rgba(138, 75, 255, 0.2);
+    box-shadow: 0 0 12px rgba(138, 75, 255, 0.15);
+    background-color: #ffffff;
 }
 

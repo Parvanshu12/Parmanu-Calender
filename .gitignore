@@ -1,0 +1,22 @@
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Databases & local logs
+calendar.db
+instance/
+.webassets-cache
+*.log
+
+# Editor configurations
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

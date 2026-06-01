@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Authentication Required - {{ room.name }}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="glass-card auth-card text-center fade-in-up">
+        <div class="card-header">
+            <div class="card-icon-container bg-violet">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2>Password Required</h2>
+        </div>
+        <p class="card-desc">This Calendar Date Blocker room (<strong>{{ room.name }}</strong>) is password-protected. Please enter the Viewer Password to enter.</p>
+        
+        <form action="{{ url_for('room_auth', code=room.code) }}" method="POST" class="auth-form">
+            <div class="form-group text-left">
+                <label for="password"><i class="fa-solid fa-key"></i> Viewer Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter room viewer passcode" required autofocus>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full bg-violet-gradient">
+                <span>Unlock Calendar</span> <i class="fa-solid fa-unlock"></i>
+            </button>
+        </form>
+        
+        <div class="auth-links">
+            <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Return Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
+        const toggleBtn = passwordInput.nextElementSibling.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.classList.remove('fa-eye');
+            toggleBtn.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.classList.remove('fa-eye-slash');
+            toggleBtn.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.name }} - Calendar Date Blocker{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('room_admin', code=room.code) }}" class="btn btn-nav btn-secondary">
+    <i class="fa-solid fa-user-gear"></i> <span>Creator Admin</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="room-container" data-room-code="{{ room.code }}" data-room-type="{{ room.type }}" {% if current_attendee %}data-current-attendee-id="{{ current_attendee.id }}" data-current-attendee-name="{{ current_attendee.name }}"{% endif %}>
+    <!-- Top Details bar -->
+    <div class="glass-card room-details-bar fade-in-up">
+        <div class="bar-info">
+            <h1 class="gradient-text">{{ room.name }}</h1>
+            <p class="text-secondary">
+                <i class="fa-solid fa-calendar"></i> Scheduled: <strong>
+                    {% if room.type == 'month' %}
+                        {{ room.month|month_name }} {{ room.year }}
+                    {% else %}
+                        {{ room.start_date }} to {{ room.end_date }}
+                    {% endif %}
+                </strong>
+                &nbsp;|&nbsp; 
+                <i class="fa-solid fa-key"></i> Code: <code class="text-glow">{{ room.code }}</code>
+            </p>
+        </div>
+        
+        <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share Room:</span>
+            <div class="copy-input-group">
+                <input type="text" id="shareUrl" class="copy-input" value="{{ request.url_root }}room/{{ room.code }}" readonly>
+                <button onclick="copyShareLink()" class="btn btn-copy" id="copyBtn">
+                    <i class="fa-solid fa-copy"></i> <span>Copy Link</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main grid layout: Sidebar on the left, Calendar on the right -->
+    <div class="room-main-grid">
+        <!-- LEFT: Sidebar -->
+        <aside class="sidebar-wrapper fade-in-up delay-100">
+            <!-- Attendee Session Management -->
+            <div class="glass-panel sidebar-card">
+                {% if not current_attendee %}
+                <!-- Sign In / Registration Form -->
+                <div class="card-header">
+                    <div class="card-icon-container bg-violet">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <h3>Start Editing</h3>
+                </div>
+                <p class="panel-sub">Enter your name and a personal password to block your dates. If you're new, this sets your password. If you're returning, it logs you back in.</p>
+                
+                <form action="{{ url_for('attendee_login', code=room.code) }}" method="POST" class="sidebar-form">
+                    <div class="form-group">
+                        <label for="attendee_name"><i class="fa-solid fa-user"></i> Your Name</label>
+                        <input type="text" id="attendee_name" name="name" placeholder="e.g. Charlie" required 
+                               value="{% if session.get('failed_attendee_name') %}{{ session.get('failed_attendee_name') }}{% endif %}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="attendee_password"><i class="fa-solid fa-lock"></i> Personal Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="attendee_password" name="password" placeholder="Create or enter password" required>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('attendee_password')">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full bg-violet-gradient">
+                        <span>Save & Edit Calendar</span> <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </form>
+
+                {% if session.get('failed_attendee_name') %}
+                <!-- Reset Password Trigger -->
+                <div class="reset-request-box mt-sm bg-glass-dark">
+                    <p class="text-danger"><i class="fa-solid fa-circle-exclamation"></i> Incorrect password for {{ session.get('failed_attendee_name') }}.</p>
+                    <form action="{{ url_for('attendee_request_reset', code=room.code) }}" method="POST">
+                        <input type="hidden" name="name" value="{{ session.get('failed_attendee_name') }}">
+                        <button type="submit" class="btn btn-warning btn-sm btn-full mt-xs">
+                            <i class="fa-solid fa-key"></i> Request Password Reset
+                        </button>
+                    </form>
+                    <p class="text-xs text-muted mt-xs">This flags your account. The room creator can clear your password in their admin panel.</p>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <!-- Authenticated Attendee Profile -->
+                <div class="attendee-profile">
+                    <div class="profile-header">
+                        <div class="avatar bg-avatar-4">
+                            {{ current_attendee.name[0]|upper }}
+                        </div>
+                        <div class="profile-meta">
+                            <span class="text-xs text-muted">Editing Calendar as</span>
+                            <h4>{{ current_attendee.name }}</h4>
+                        </div>
+                    </div>
+
+                    <!-- Paint Controls -->
+                    <div class="paint-controls bg-glass-dark">
+                        <label class="control-section-label"><i class="fa-solid fa-palette"></i> Select Paint Mode</label>
+                        <p class="text-xs text-muted">Click days on the calendar to apply the selected status:</p>
+                        
+                        <div class="paint-modes">
+                            <!-- Mode 1: Available -->
+                            <button class="paint-mode-btn mode-available active" data-mode="available">
+                                <span class="paint-color bg-emerald"></span>
+                                <span>Available</span>
+                                <i class="fa-solid fa-check check-indicator"></i>
+                            </button>
+                            
+                            <!-- Mode 2: Unavailable -->
+                            <button class="paint-mode-btn mode-unavailable" data-mode="unavailable">
+                                <span class="paint-color bg-rose"></span>
+                                <span>Unavailable</span>
+                                <i class="fa-solid fa-check check-indicator"></i>
+                            </button>
+
+                            <!-- Mode 3: Eraser -->
+                            <button class="paint-mode-btn mode-clear" data-mode="none">
+                                <span class="paint-color bg-clear"><i class="fa-solid fa-eraser"></i></span>
+                                <span>Clear / Eraser</span>
+                                <i class="fa-solid fa-check check-indicator"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('attendee_logout', code=room.code) }}" class="btn btn-danger btn-full mt-sm">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Stop Editing</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Participant List Panel -->
+            <div class="glass-panel sidebar-card">
+                <div class="card-header">
+                    <div class="card-icon-container bg-emerald">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3>Who is in? <span class="participant-count badge bg-emerald" id="peopleCount">0</span></h3>
+                </div>
+                <div class="participant-list" id="participantList">
+                    <div class="empty-state text-center text-muted py-sm">
+                        <i class="fa-solid fa-users-slash text-muted d-block mb-xs"></i>
+                        <span>No participants registered yet.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Chat Board Panel -->
+            <div class="glass-panel sidebar-card message-board-card">
+                <div class="card-header">
+                    <div class="card-icon-container bg-violet">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3>Room Chat Board</h3>
+                </div>
+                
+                <!-- Scrollable Messages Window -->
+                <div class="chat-messages-container" id="chatMessages">
+                    <div class="empty-state text-center text-muted py-sm">
+                        <i class="fa-solid fa-comments-slash d-block mb-xs text-muted"></i>
+                        <span>No chat comments yet. Start the conversation!</span>
+                    </div>
+                </div>
+
+                <!-- Input Message Box -->
+                <div class="chat-input-wrapper mt-sm" style="display: flex; gap: 8px;">
+                    <input type="text" id="chatInput" style="flex: 1; padding: 10px; font-size: 0.85rem;" 
+                           placeholder="{% if current_attendee %}Type a message...{% else %}Log in to chat...{% endif %}" 
+                           {% if not current_attendee %}disabled{% endif %}>
+                    <button id="sendChatBtn" class="btn btn-secondary" style="padding: 10px 14px; border-radius: var(--radius-sm);" 
+                            {% if not current_attendee %}disabled{% endif %}><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT: Calendar Block -->
+        <main class="calendar-wrapper fade-in-up delay-150">
+            <div class="glass-panel calendar-card">
+                <!-- Interactive Action Bar -->
+                <div class="calendar-bar">
+                    <div class="legend-indicator">
+                        <span class="legend-title"><i class="fa-solid fa-circle-info"></i> Color Key:</span>
+                        <div class="legend-scale">
+                            <span class="scale-item"><span class="scale-box score-0"></span> <span class="text-xs">None</span></span>
+                            <span class="scale-item"><span class="scale-box score-low"></span> <span class="text-xs">Some</span></span>
+                            <span class="scale-item"><span class="scale-box score-high"></span> <span class="text-xs">Most</span></span>
+                            <span class="scale-item"><span class="scale-box score-perfect"></span> <span class="text-xs">100% Free</span></span>
+                            <span class="scale-item"><span class="scale-box bg-rose"></span> <span class="text-xs">Blocked</span></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary bg-emerald-gradient" id="generateResultsBtn">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Generate Best Dates</span>
+                    </button>
+                </div>
+
+                <!-- Render Calendar Month(s) dynamic sections -->
+                <div class="calendar-months-container" id="calendarGrid">
+                    {% for month_obj in months_structure %}
+                    <div class="calendar-month-section {% if not loop.first %}mt-lg{% endif %}">
+                        <h3 class="calendar-month-title text-glow" style="font-size: 1.15rem; margin-bottom: 12px; font-weight: 700; color: var(--text-primary);">
+                            <i class="fa-solid fa-calendar-days text-glow"></i> &nbsp;{{ month_obj.name }} {{ month_obj.year }}
+                        </h3>
+                        
+                        <div class="calendar-grid-container bg-glass-dark" style="padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                            <!-- Weekdays Header -->
+                            <div class="calendar-weekdays">
+                                <div class="weekday">Sun</div>
+                                <div class="weekday">Mon</div>
+                                <div class="weekday">Tue</div>
+                                <div class="weekday">Wed</div>
+                                <div class="weekday">Thu</div>
+                                <div class="weekday">Fri</div>
+                                <div class="weekday">Sat</div>
+                            </div>
+
+                            <!-- Calendar Grid squares -->
+                            <div class="calendar-grid">
+                                <!-- Render start offset placeholders -->
+                                {% for _ in range(month_obj.start_offset) %}
+                                    <div class="calendar-day day-offset"></div>
+                                {% endfor %}
+
+                                <!-- Render month dates -->
+                                {% for day in month_obj.days %}
+                                    {% if day.disabled %}
+                                        <!-- Out of range custom date range spacer -->
+                                        <div class="calendar-day day-cell day-disabled" style="opacity: 0.2; pointer-events: none; border-color: rgba(255,255,255,0.02);">
+                                            <div class="day-number">{{ day.num }}</div>
+                                        </div>
+                                    {% else %}
+                                        <div class="calendar-day day-cell clickable-day" data-day="{{ day.num }}" data-date-str="{{ day.date_str }}">
+                                            <div class="day-number">{{ day.num }}</div>
+                                            
+                                            <!-- Heatmap Overlay -->
+                                            <div class="day-heatmap-overlay"></div>
+                                            
+                                            <!-- Ticks and crosses count badges -->
+                                            <div class="day-markers">
+                                                <span class="marker marker-available"><i class="fa-solid fa-check"></i> <span class="count">0</span></span>
+                                                <span class="marker marker-unavailable"><i class="fa-solid fa-xmark"></i> <span class="count">0</span></span>
+                                            </div>
+                                            
+                                            <!-- Inline list of names in cell -->
+                                            <div class="day-names-container"></div>
+                                            
+                                            <!-- Custom Popover Tooltip -->
+                                            <div class="day-tooltip">
+                                                <div class="tooltip-arrow"></div>
+                                                <div class="tooltip-date">{{ month_obj.name }} {{ day.num }}, {{ month_obj.year }}</div>
+                                                <div class="tooltip-section section-available">
+                                                    <div class="section-title"><i class="fa-solid fa-circle-check text-emerald"></i> Available (0):</div>
+                                                    <div class="names">-</div>
+                                                </div>
+                                                <div class="tooltip-section section-unavailable">
+                                                    <div class="section-title"><i class="fa-solid fa-circle-xmark text-rose"></i> Unavailable (0):</div>
+                                                    <div class="names">-</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Optimal Results Drawer -->
+            <div class="glass-panel results-drawer mt-md hide-drawer" id="resultsDrawer">
+                <div class="drawer-header">
+                    <div class="d-flex align-center gap-sm">
+                        <div class="card-icon-container bg-emerald">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <h3>Availability Analysis</h3>
+                            <p class="panel-sub">Calculated optimal dates sorted by participation rates.</p>
+                        </div>
+                    </div>
+                    <button class="btn-close-drawer" id="closeDrawerBtn"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="drawer-content">
+                    <div class="results-grid">
+                        <!-- Perfect match container -->
+                        <div class="result-block block-perfect">
+                            <h4><i class="fa-solid fa-trophy text-gold"></i> Perfect Consensus <span class="text-xs text-muted">(100% Available)</span></h4>
+                            <div class="results-list" id="perfectDatesList">
+                                <div class="empty-state py-xs text-center text-muted">No dates have 100% availability.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- High matches -->
+                        <div class="result-block block-partial">
+                            <h4><i class="fa-solid fa-star text-violet"></i> High Consensus <span class="text-xs text-muted">(Partial Availability)</span></h4>
+                            <div class="results-list" id="partialDatesList">
+                                <div class="empty-state py-xs text-center text-muted">No partial availability dates found.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Custom toast notifications container -->
+<div id="toastContainer" class="toast-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Import custom Room controller logic -->
+<script src="{{ url_for('static', filename='js/room.js') }}"></script>
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
+        const toggleBtn = passwordInput.nextElementSibling.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.classList.remove('fa-eye');
+            toggleBtn.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.classList.remove('fa-eye-slash');
+            toggleBtn.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

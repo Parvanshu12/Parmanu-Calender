@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendar Date Blocker - Find Common Free Dates{% endblock %}
+
+{% block content %}
+<div class="welcome-section text-center">
+    <h1 class="welcome-title gradient-text">Coordinate Schedules, Instantly.</h1>
+    <p class="welcome-subtitle">A premium, beautiful way to find the perfect date for everyone without passwords in email threads, tedious copy-pastes, or coordinate logs.</p>
+</div>
+
+<div class="landing-grid">
+    <!-- Card 1: Create Calendar -->
+    <div class="glass-card create-card fade-in-up">
+        <div class="card-header">
+            <div class="card-icon-container bg-violet">
+                <i class="fa-solid fa-calendar-plus"></i>
+            </div>
+            <h2>Create a Calendar</h2>
+        </div>
+        <p class="card-desc">Set up a new monthly calendar room or define a custom date range, configure access passwords, and start blocking dates together.</p>
+        
+        <form action="{{ url_for('create_room') }}" method="POST" class="auth-form">
+            <!-- New: Scheduling Type Toggle -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-calendar-check text-glow"></i> Select Scheduling Type</label>
+                <div class="d-flex gap-md mt-xs bg-glass-dark" style="padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+                    <label class="clickable" style="cursor: pointer; gap: 8px; color: var(--text-primary);">
+                        <input type="radio" name="room_type" value="month" checked onclick="toggleCreationFields('month')" style="cursor: pointer; margin: 0;">
+                        <span>Single Month</span>
+                    </label>
+                    <label class="clickable" style="cursor: pointer; gap: 8px; color: var(--text-primary);">
+                        <input type="radio" name="room_type" value="range" onclick="toggleCreationFields('range')" style="cursor: pointer; margin: 0;">
+                        <span>Custom Date Range</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Option A: Single Month Selector -->
+            <div id="monthSelectorContainer" class="form-row">
+                <div class="form-group half">
+                    <label for="month"><i class="fa-solid fa-calendar-days"></i> Month</label>
+                    <select id="month" name="month" required>
+                        <option value="" disabled selected>Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                
+                <div class="form-group half">
+                    <label for="year"><i class="fa-solid fa-hashtag"></i> Year</label>
+                    <select id="year" name="year" required>
+                        <option value="" disabled>Select Year</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Option B: Custom Date Range Selector (Hidden by Default) -->
+            <div id="rangeSelectorContainer" class="form-row" style="display: none;">
+                <div class="form-group half">
+                    <label for="start_date"><i class="fa-solid fa-clock"></i> Start Date</label>
+                    <input type="date" id="start_date" name="start_date" placeholder="YYYY-MM-DD">
+                </div>
+                <div class="form-group half">
+                    <label for="end_date"><i class="fa-solid fa-flag"></i> End Date <span class="label-hint">(Max 2 months)</span></label>
+                    <input type="date" id="end_date" name="end_date" placeholder="YYYY-MM-DD">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="viewer_password"><i class="fa-solid fa-lock"></i> Viewer Password <span class="label-hint">(Shared with attendees)</span></label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="viewer_password" name="viewer_password" placeholder="Passcode for friends to view & edit" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('viewer_password')">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="creator_password"><i class="fa-solid fa-user-shield"></i> Creator Admin Password <span class="label-hint">(Kept private to reset user passwords)</span></label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="creator_password" name="creator_password" placeholder="Admin code to approve resets" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('creator_password')">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full bg-violet-gradient">
+                <span>Create Calendar Room</span> <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Card 2: Join Calendar -->
+    <div class="glass-card join-card fade-in-up delay-100">
+        <div class="card-header">
+            <div class="card-icon-container bg-emerald">
+                <i class="fa-solid fa-right-to-bracket"></i>
+            </div>
+            <h2>Join a Calendar</h2>
+        </div>
+        <p class="card-desc">Have a shared room code? Paste it here to access the monthly calendar, view attendance, and paint your schedule.</p>
+        
+        <form action="{{ url_for('join_room') }}" method="POST" class="auth-form join-form-wrapper">
+            <div class="form-group">
+                <label for="room_code"><i class="fa-solid fa-ticket"></i> Enter 8-Character Room Code</label>
+                <input type="text" id="room_code" name="room_code" placeholder="e.g. A1B2C3D4" maxlength="8" style="text-transform: uppercase;" required>
+            </div>
+            
+            <button type="submit" class="btn btn-secondary btn-full bg-emerald-gradient">
+                <span>Access Room</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+        </form>
+
+        <div class="features-list">
+            <h3><i class="fa-solid fa-star text-gold"></i> Premium Features included:</h3>
+            <div class="feature-item">
+                <div class="feat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div>
+                    <h4>Dynamic Heatmaps & Votes</h4>
+                    <p>Colors scale dynamically as attendees paint schedules and cast thumbs-up votes to agree on optimal dates.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feat-icon"><i class="fa-solid fa-message"></i></div>
+                <div>
+                    <h4>Real-time Chat Board</h4>
+                    <p>Integrated sidebar discussion board for attendees to chat and coordinate availability notes in real-time.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div>
+                    <h4>Auto-Calculate Consensus</h4>
+                    <p>One-click consensus generator showing perfect agreements and partial matches decorated with Winner trophies.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
+        const toggleBtn = passwordInput.nextElementSibling.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.classList.remove('fa-eye');
+            toggleBtn.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.classList.remove('fa-eye-slash');
+            toggleBtn.classList.add('fa-eye');
+        }
+    }
+
+    function toggleCreationFields(type) {
+        const monthContainer = document.getElementById('monthSelectorContainer');
+        const rangeContainer = document.getElementById('rangeSelectorContainer');
+        
+        if (type === 'month') {
+            monthContainer.style.display = 'flex';
+            rangeContainer.style.display = 'none';
+            document.getElementById('month').required = true;
+            document.getElementById('year').required = true;
+            document.getElementById('start_date').required = false;
+            document.getElementById('end_date').required = false;
+        } else {
+            monthContainer.style.display = 'none';
+            rangeContainer.style.display = 'flex';
+            document.getElementById('month').required = false;
+            document.getElementById('year').required = false;
+            document.getElementById('start_date').required = true;
+            document.getElementById('end_date').required = true;
+        }
+    }
+</script>
+{% endblock %}

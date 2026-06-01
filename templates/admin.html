@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Creator Admin Panel - {{ room.name }}{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('room_dashboard', code=room.code) }}" class="btn btn-nav btn-secondary">
+    <i class="fa-solid fa-arrow-left"></i> <span>Back to Calendar</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+    {% if not authenticated %}
+    <!-- Admin Login Screen -->
+    <div class="glass-card auth-card text-center fade-in-up">
+        <div class="card-header">
+            <div class="card-icon-container bg-violet">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h2>Creator Control Center</h2>
+        </div>
+        <p class="card-desc">Enter the <strong>Creator Admin Password</strong> for this room to view attendees and manage password reset requests.</p>
+        
+        <form action="{{ url_for('room_admin', code=room.code) }}" method="POST" class="auth-form">
+            <div class="form-group text-left">
+                <label for="password"><i class="fa-solid fa-key"></i> Creator Admin Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter admin passcode" required autofocus>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full bg-violet-gradient">
+                <span>Access Admin Panel</span> <i class="fa-solid fa-shield"></i>
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <!-- Logged in Admin Panel Dashboard -->
+    <div class="glass-card admin-dashboard fade-in-up">
+        <div class="admin-header">
+            <div>
+                <span class="badge bg-badge-violet">Admin Panel</span>
+                <h1 class="gradient-text">{{ room.name }} - Management</h1>
+                <p class="text-secondary"><i class="fa-solid fa-calendar"></i> Scheduled: 
+                    {% if room.type == 'month' %}
+                        {{ room.month|month_name }} {{ room.year }}
+                    {% else %}
+                        {{ room.start_date }} to {{ room.end_date }}
+                    {% endif %}
+                    &nbsp;|&nbsp; <i class="fa-solid fa-ticket"></i> Code: <code>{{ room.code }}</code>
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_logout', code=room.code) }}" class="btn btn-danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> <span>Logout Admin</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Left panel: Attendee List and Passwords management -->
+            <div class="admin-panel-card glass-panel">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-users"></i> Attendee Directory & Password Control</h3>
+                    <p class="panel-sub">Manage all participants and resolve locked accounts by clearing passwords.</p>
+                </div>
+                
+                {% if not attendees %}
+                <div class="empty-state text-center">
+                    <i class="fa-solid fa-users-slash text-muted"></i>
+                    <p>No attendees have joined this room yet. Share the room code with participants to get started!</p>
+                </div>
+                {% else %}
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Attendee Name</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendee in attendees %}
+                            <tr class="{% if attendee.reset_requested %}row-highlight{% endif %}">
+                                <td>
+                                    <div class="attendee-name-col">
+                                        <div class="avatar bg-avatar-{{ loop.index0 % 5 }}">
+                                            {{ attendee.name[0]|upper }}
+                                        </div>
+                                        <span>{{ attendee.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if attendee.reset_requested %}
+                                    <span class="status-badge status-warning animate-pulse">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Reset Requested
+                                    </span>
+                                    {% elif attendee.password_hash is none %}
+                                    <span class="status-badge status-info">
+                                        <i class="fa-solid fa-circle-question"></i> Password Cleared
+                                    </span>
+                                    {% else %}
+                                    <span class="status-badge status-success">
+                                        <i class="fa-solid fa-circle-check"></i> Secured
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-right">
+                                    <form action="{{ url_for('approve_reset', code=room.code, attendee_id=attendee.id) }}" method="POST" style="display:inline-block;">
+                                        {% if attendee.reset_requested %}
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fa-solid fa-check"></i> Approve Reset
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to clear the password for {{ attendee.name }}? This will allow them to re-register a new password upon logging back in.')">
+                                            <i class="fa-solid fa-key"></i> Force Clear Password
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    
+                                    <!-- New Kick Form -->
+                                    <form action="{{ url_for('kick_attendee', code=room.code, attendee_id=attendee.id) }}" method="POST" style="display:inline-block; margin-left: 6px;">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to permanently remove {{ attendee.name }}? This will instantly delete all their dates, votes, and chat messages.')">
+                                            <i class="fa-solid fa-user-minus"></i> Kick
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right panel: Room Info & Sharing -->
+            <div class="admin-panel-card glass-panel flex-column gap-md">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-circle-info"></i> Room Information</h3>
+                </div>
+                
+                <div class="info-card bg-glass-dark">
+                    <div class="info-row">
+                        <span class="info-label">Room URL</span>
+                        <div class="copy-input-group">
+                            <input type="text" id="shareUrl" class="copy-input" value="{{ request.url_root }}room/{{ room.code }}" readonly>
+                            <button onclick="copyAdminShareLink()" class="btn btn-copy"><i class="fa-solid fa-copy"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Room Code</span>
+                        <span class="info-value text-glow"><code>{{ room.code }}</code></span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Scheduled Date</span>
+                        <span class="info-value font-highlight">
+                            {% if room.type == 'month' %}
+                                {{ room.month|month_name }} {{ room.year }}
+                            {% else %}
+                                {{ room.start_date }} to {{ room.end_date }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Total Participants</span>
+                        <span class="info-value badge bg-emerald">{{ attendees|length }}</span>
+                    </div>
+                </div>
+
+                <div class="instruction-box bg-violet-hint">
+                    <h4>How do resets work?</h4>
+                    <p>When an attendee clicks <strong>"Request Reset"</strong>, their status changes to <em>Reset Requested</em>. Approving the request will clear their password hash. The next time that attendee logs in, they will be prompted to define a new password. This ensures maximum convenience without relying on email setup!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePasswordVisibility(fieldId) {
+        const passwordInput = document.getElementById(fieldId);
+        const toggleBtn = passwordInput.nextElementSibling.querySelector('i');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.classList.remove('fa-eye');
+            toggleBtn.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.classList.remove('fa-eye-slash');
+            toggleBtn.classList.add('fa-eye');
+        }
+    }
+
+    function copyAdminShareLink() {
+        const copyText = document.getElementById("shareUrl");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        
+        // Custom temporary notification
+        alert("Room share link copied to clipboard!");
+    }
+</script>
+{% endblock %}

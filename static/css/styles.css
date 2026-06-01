@@ -1445,6 +1445,12 @@ select option {
 
     .calendar-grid-container {
         padding: 8px !important;
+        overflow-x: auto !important; /* Internal safety net to ensure no weekend dates are cut off */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-grid, .calendar-weekdays {
+        min-width: 290px; /* Secure baseline cell layout legibility */
     }
 
     .room-main-grid {

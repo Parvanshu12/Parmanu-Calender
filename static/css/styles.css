@@ -49,6 +49,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-primary);
@@ -56,7 +61,6 @@ body {
     line-height: 1.5;
     min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
 }
 
 /* Ambient Glowing Background Elements */
@@ -1424,6 +1428,51 @@ select option {
 }
 
 @media (max-width: 768px) {
+    /* Responsive Layout Ordering & Container fitting to eliminate horizontal overflow */
+    .app-container {
+        padding: 0 12px !important;
+        overflow-x: hidden !important;
+    }
+
+    .glass-card {
+        padding: 16px !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .glass-panel {
+        padding: 16px !important;
+    }
+
+    .calendar-grid-container {
+        padding: 8px !important;
+    }
+
+    .room-main-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .sidebar-wrapper {
+        display: contents; /* Promotes cards to direct children of room-main-grid for flex ordering */
+    }
+
+    .attendee-session-card {
+        order: 1;
+    }
+
+    .calendar-wrapper {
+        order: 2;
+    }
+
+    .participant-list-card {
+        order: 3;
+    }
+
+    .message-board-card {
+        order: 4;
+    }
+
     .landing-grid, .results-grid, .admin-grid {
         grid-template-columns: 1fr;
     }
@@ -1579,42 +1628,38 @@ select option {
         line-height: 1.2;
     }
 
-    /* Sticky Bottom Mobile Painter Dock (UX standard for quick editing) */
+    /* Soothing Inline Mobile Painter Controls (No floating dock to save space) */
     .attendee-profile {
         position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
     
     .editor-active ~ .app-footer {
-        padding-bottom: 90px; /* offset bottom dock */
+        padding-bottom: 0; /* remove bottom dock offset */
     }
 
-    /* When user is logged in as attendee editor, display the paint selector floating at bottom */
     .editor-active + .results-drawer {
-        margin-bottom: 80px;
+        margin-bottom: 0;
     }
 
     .room-container[data-current-attendee-id] .paint-controls {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100vw;
-        z-index: 1000;
-        background: rgba(240, 242, 247, 0.98);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: none;
-        border-top: 1px solid var(--glass-border-glow);
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
-        padding: 12px 20px;
-        box-shadow: 0 -8px 30px rgba(50, 55, 70, 0.08);
+        position: static;
+        width: 100%;
+        background: rgba(240, 242, 247, 0.45);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        box-shadow: none;
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
     }
 
     .room-container[data-current-attendee-id] .paint-controls .control-section-label {
-        font-size: 0.75rem;
-        text-align: center;
+        font-size: 0.8rem;
+        text-align: left;
         margin-bottom: 2px;
     }
 
@@ -1630,8 +1675,8 @@ select option {
 
     .room-container[data-current-attendee-id] .paint-mode-btn {
         flex: 1;
-        padding: 8px 6px !important;
-        font-size: 0.75rem !important;
+        padding: 10px 8px !important;
+        font-size: 0.78rem !important;
         justify-content: center;
         gap: 6px;
     }
@@ -1641,7 +1686,7 @@ select option {
     }
 
     .room-container[data-current-attendee-id] .btn-danger.btn-full {
-        margin-top: 10px !important;
+        margin-top: 4px !important;
     }
 }
 

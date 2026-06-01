@@ -20,6 +20,12 @@
         <p class="card-desc">Set up a new monthly calendar room or define a custom date range, configure access passwords, and start blocking dates together.</p>
         
         <form action="{{ url_for('create_room') }}" method="POST" class="auth-form">
+            <!-- Room Title Input -->
+            <div class="form-group">
+                <label for="room_name"><i class="fa-solid fa-signature"></i> Calendar Title</label>
+                <input type="text" id="room_name" name="room_name" placeholder="e.g. Summer Reunion, Board Meeting" required>
+            </div>
+
             <!-- New: Scheduling Type Toggle -->
             <div class="form-group">
                 <label><i class="fa-solid fa-calendar-check text-glow"></i> Select Scheduling Type</label>

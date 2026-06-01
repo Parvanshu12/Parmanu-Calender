@@ -11,8 +11,14 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', secrets.token_hex(32))
 
 # Database setup
-# Store database file in the local workspace directory
-db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'calendar.db')
+# Detect if running on Render with an attached persistent disk path, otherwise write to local folder
+persistent_dir = '/opt/calendar-data'
+if os.path.exists(persistent_dir) and os.access(persistent_dir, os.W_OK):
+    db_path = os.path.join(persistent_dir, 'calendar.db')
+else:
+    # Local workspace folder fallback (saves data forever on your hard drive)
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'calendar.db')
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

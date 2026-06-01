@@ -7,30 +7,30 @@
     --font-primary: 'Outfit', sans-serif;
     --font-secondary: 'Plus Jakarta Sans', sans-serif;
 
-    /* Premium Ultra-Light & Glowing HSL Color System */
-    --bg-dark: #f8f9fc;
-    --bg-deep: #f0f2f7;
-    --violet: hsl(252, 82%, 58%);
-    --violet-glow: hsla(252, 82%, 58%, 0.1);
-    --violet-hover: hsl(252, 82%, 64%);
-    --emerald: hsl(150, 72%, 36%);
-    --emerald-glow: hsla(150, 72%, 36%, 0.1);
-    --rose: hsl(355, 78%, 52%);
-    --rose-glow: hsla(355, 78%, 52%, 0.1);
-    --amber: hsl(40, 92%, 45%);
+    /* Soothing Premium Slate-Grey HSL Color System (Greyish Brightness) */
+    --bg-dark: #e6e8ee;
+    --bg-deep: #d5d7df;
+    --violet: hsl(252, 75%, 54%);
+    --violet-glow: hsla(252, 75%, 54%, 0.08);
+    --violet-hover: hsl(252, 75%, 60%);
+    --emerald: hsl(150, 68%, 34%);
+    --emerald-glow: hsla(150, 68%, 34%, 0.08);
+    --rose: hsl(355, 74%, 48%);
+    --rose-glow: hsla(355, 74%, 48%, 0.08);
+    --amber: hsl(40, 88%, 42%);
     
-    /* Sleek Deep Slate Typography for extreme contrast and premium feel */
-    --text-primary: #150f24;
-    --text-secondary: #4a415d;
-    --text-muted: #817897;
+    /* Sleek Deep Slate Charcoal Typography for maximum legibility and eye comfort */
+    --text-primary: #1b1e24;
+    --text-secondary: #484f5c;
+    --text-muted: #79808d;
 
-    /* High-Fidelity Light Frosted Glassmorphism Specs */
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.9);
-    --glass-border-glow: rgba(138, 75, 255, 0.35);
-    --glass-panel-bg: rgba(255, 255, 255, 0.45);
-    --glass-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.05), 0 1px 1px 0 rgba(255, 255, 255, 0.8) inset;
-    --glow-shadow: 0 0 30px rgba(138, 75, 255, 0.12);
+    /* Premium Matte Slate-Grey Glassmorphism Specs (Soft & Glare-Free) */
+    --glass-bg: rgba(240, 242, 247, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-border-glow: rgba(108, 93, 211, 0.25);
+    --glass-panel-bg: rgba(230, 233, 240, 0.5);
+    --glass-shadow: 0 10px 40px -10px rgba(50, 55, 70, 0.07), 0 1px 1px 0 rgba(255, 255, 255, 0.4) inset;
+    --glow-shadow: 0 0 30px rgba(108, 93, 211, 0.06);
 
     --radius-sm: 8px;
     --radius-md: 14px;
@@ -363,8 +363,8 @@ label {
 }
 
 input, select {
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(138, 75, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(108, 93, 211, 0.15);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 12px 14px;
@@ -376,8 +376,8 @@ input, select {
 input:focus, select:focus {
     outline: none;
     border-color: var(--violet);
-    box-shadow: 0 0 12px rgba(138, 75, 255, 0.15);
-    background-color: #ffffff;
+    box-shadow: 0 0 12px rgba(108, 93, 211, 0.12);
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 select option {
@@ -791,7 +791,7 @@ select option {
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background-color: rgba(255, 255, 255, 0.45);
+    background-color: rgba(240, 242, 247, 0.4);
     border-radius: var(--radius-sm);
     border: 1px solid var(--glass-border);
 }
@@ -865,7 +865,7 @@ select option {
 }
 
 /* Color gradations for available heatmaps */
-.score-0 { background-color: rgba(255, 255, 255, 0.45); }
+.score-0 { background-color: rgba(240, 242, 247, 0.5); }
 .score-low { background-color: hsla(150, 72%, 40%, 0.12); }
 .score-high { background-color: hsla(150, 72%, 40%, 0.35); }
 .score-perfect { 
@@ -898,7 +898,7 @@ select option {
 
 .calendar-day {
     aspect-ratio: 1.15;
-    background-color: rgba(255, 255, 255, 0.45);
+    background-color: rgba(240, 242, 247, 0.45);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     padding: 8px;
@@ -1028,11 +1028,11 @@ select option {
     left: 50%;
     transform: translateX(-50%) translateY(5px) scale(0.95);
     width: 200px;
-    background-color: rgba(255, 255, 255, 0.98);
+    background-color: rgba(240, 242, 247, 0.98);
     border: 1px solid var(--glass-border-glow);
     border-radius: var(--radius-sm);
     padding: 10px;
-    box-shadow: 0 10px 30px rgba(31, 38, 135, 0.08);
+    box-shadow: 0 10px 30px rgba(50, 55, 70, 0.06);
     z-index: 100;
     opacity: 0;
     pointer-events: none;
@@ -1048,7 +1048,7 @@ select option {
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid rgba(255, 255, 255, 0.98);
+    border-top: 6px solid rgba(240, 242, 247, 0.98);
 }
 
 .clickable-day:hover .day-tooltip {
@@ -1168,7 +1168,7 @@ select option {
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(240, 242, 247, 0.45);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
 }
@@ -1288,7 +1288,7 @@ select option {
 }
 
 .bg-glass-dark {
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(230, 233, 240, 0.45);
 }
 
 .info-row {
@@ -1355,10 +1355,10 @@ select option {
 }
 
 .toast {
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(240, 242, 247, 0.98);
     border: 1px solid var(--glass-border-glow);
     border-left: 4px solid var(--violet);
-    box-shadow: 0 10px 40px rgba(31, 38, 135, 0.08);
+    box-shadow: 0 10px 40px rgba(50, 55, 70, 0.08);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     padding: 14px 20px;
@@ -1599,14 +1599,14 @@ select option {
         left: 0;
         width: 100vw;
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.98);
+        background: rgba(240, 242, 247, 0.98);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: none;
         border-top: 1px solid var(--glass-border-glow);
         border-radius: var(--radius-md) var(--radius-md) 0 0;
         padding: 12px 20px;
-        box-shadow: 0 -8px 30px rgba(31, 38, 135, 0.08);
+        box-shadow: 0 -8px 30px rgba(50, 55, 70, 0.08);
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -1714,14 +1714,14 @@ select option {
 }
 
 .chat-other .chat-bubble {
-    background-color: rgba(255, 255, 255, 0.65);
+    background-color: rgba(240, 242, 247, 0.6);
     color: var(--text-primary);
     border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
     border: 1px solid var(--glass-border);
 }
 
 .chat-input-wrapper input {
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(240, 242, 247, 0.6);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
@@ -1731,6 +1731,6 @@ select option {
 .chat-input-wrapper input:focus {
     border-color: var(--violet);
     box-shadow: 0 0 12px rgba(138, 75, 255, 0.15);
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.85);
 }
 

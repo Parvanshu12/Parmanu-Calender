@@ -11,15 +11,18 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', secrets.token_hex(32))
 
 # Database setup
-# Detect if running on Render with an attached persistent disk path, otherwise write to local folder
-persistent_dir = '/opt/calendar-data'
-if os.path.exists(persistent_dir) and os.access(persistent_dir, os.W_OK):
-    db_path = os.path.join(persistent_dir, 'calendar.db')
+# Automatically detect if a DATABASE_URL environment variable is provided (like Render's PostgreSQL connection string)
+db_url = os.environ.get('DATABASE_URL')
+if db_url:
+    # Render PostgreSQL URIs sometimes start with "postgres://" but SQLAlchemy 1.4+/2.0 requires "postgresql://"
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
-    # Local workspace folder fallback (saves data forever on your hard drive)
+    # Local fallback: saves data forever as calendar.db in your project folder
     db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'calendar.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

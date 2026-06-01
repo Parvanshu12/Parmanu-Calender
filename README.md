@@ -1,6 +1,6 @@
-# 📅 Parmanu Calendar - Collaborative Date Blocker
+# 📅 DateSync - Collaborative Date Blocker
 
-A premium, visually stunning, and highly collaborative monthly date blocker web application. **Parmanu Calendar** lets groups coordinate schedules, paint availabilities, chat inside shared rooms, and dynamically vote on candidate dates to find the perfect scheduling consensus out of the box—with zero cookie cache dependencies or signups required.
+A premium, visually stunning, and highly collaborative monthly date blocker web application. **DateSync** lets groups coordinate schedules, paint availabilities, chat inside shared rooms, and dynamically vote on candidate dates to find the perfect scheduling consensus out of the box—with zero cookie cache dependencies or signups required.
 
 ---
 

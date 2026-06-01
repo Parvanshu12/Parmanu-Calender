@@ -1,5 +1,5 @@
 // ==========================================================================
-// Parmanu Calendar - Room Dashboard Interactive Controller
+// DateSync - Room Dashboard Interactive Controller
 // Real-time AJAX painting, heatmaps, tooltips, and consensus generation.
 // ==========================================================================
 

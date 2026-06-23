@@ -13,21 +13,27 @@ A premium, visually stunning, and highly collaborative monthly date blocker web 
   * Paint dates in **Available (Green)**, **Unavailable (Red)**, or **Clear (Eraser)**.
   * Live availability consensus color indicators: dates where everyone is available glow deep emerald HSL green.
   * Day cells show the names of who is free and blocked directly on the grid, with custom hover tooltips showing details.
+* **📝 Availability Notes**:
+  * Attach an optional note (e.g., "Busy until 3 PM", "Remote") when painting your calendar availability. Notes display in tooltips on day hover.
+* **⚡ Bulk Paint Actions**:
+  * Quickly paint the entire calendar as "Available" or reset all your markings with one click using the new **Paint All** and **Reset** buttons.
 * **📅 Month vs Custom Date Ranges**:
   * Create calendars for a single Month/Year, or specify a custom start-to-end date range (validated up to a maximum of 2 months / 62 days).
   * Automatically renders consecutive months stacked vertically with out-of-range dates disabled.
-* **🗳️ consensus Candidate Voting**:
+* **🗳️ Consensus Candidate Voting**:
   * One-click "Generate Best Dates" calculates perfect matches and sorted partial matches.
   * Attendees vote on candidate dates. The highest-voted date gets highlighted with a golden **"🏆 Winner"** crown badge.
+* **📅 Calendar Exports (ICS & Google Calendar)**:
+  * Export candidate dates with one click: download a standard `.ics` invitation file or add it directly to your Google Calendar.
 * **💬 Sidebar Glassmorphic Chat Board**:
   * Real-time text discussion thread embedded in the room sidebar.
   * Bubble alignments: messages from "you" align right in glowing violet; others align left in translucent dark gray.
-* **🛡️ Creator Admin Dashboard**:
-  * Creator enters room Creator Password to view participant directories.
-  * Approve password reset requests (clears hashed passwords so users can re-register credentials).
-  * Administrative **Kick Powers** to permanently remove problematic participant entries, cascading to clear all their dates, votes, and chat posts instantly.
-* **📱 Viewport-Sticky Mobile Editor Bar**:
-  * On mobile screens, paint tool controls dock fixed to the bottom of the viewport so users can paint dates and toggle brushes on the fly without constant scrolling.
+* **🛡️ Creator Admin Dashboard & Room Lock**:
+  * Creator enters room Creator Password to view participant directories and approve reset requests.
+  * Administrative **Kick Powers** to permanently remove problematic participant entries.
+  * **Room Access Lock**: Lock/unlock room editing from `/admin` to freeze all markings, votes, and chat boards when scheduling is finalized.
+* **📱 Optimized Mobile-First Layout**:
+  * Highly responsive layout that repositions elements dynamically: paint tools and profile at the top, the calendar grid in the middle (internally scrollable/safely contained), and the room chat board conveniently located at the bottom.
 
 ---
 

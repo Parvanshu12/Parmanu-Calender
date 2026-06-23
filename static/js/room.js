@@ -32,11 +32,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Paint Tool Selection ---
     const paintModeBtns = document.querySelectorAll('.paint-mode-btn');
+    const paintNoteWrapper = document.getElementById('paintNoteWrapper');
+    
+    // Set initial visibility of paint note wrapper
+    if (paintNoteWrapper) {
+        paintNoteWrapper.style.display = activePaintMode === 'none' ? 'none' : 'block';
+    }
+
     paintModeBtns.forEach(btn => {
         btn.addEventListener('click', function () {
             paintModeBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             activePaintMode = this.getAttribute('data-mode');
+            
+            if (paintNoteWrapper) {
+                paintNoteWrapper.style.display = activePaintMode === 'none' ? 'none' : 'block';
+            }
+            
             showToast(`Paint tool switched to: ${activePaintMode === 'none' ? 'Clear/Eraser' : activePaintMode}`, 'info');
         });
     });
@@ -63,6 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Refresh drawer content if it's currently open
                         calculateAndDisplayConsensus(false);
                     }
+                    
+                    updateLockedStateUI();
                 } else {
                     showToast(data.error || "Failed to sync calendar details.", "error");
                 }
@@ -211,8 +225,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // 5. Populate tooltip structures
-            const availNames = dayData.available.length > 0 ? dayData.available.join(', ') : '-';
-            const unavailNames = dayData.unavailable.length > 0 ? dayData.unavailable.join(', ') : '-';
+            const availNamesList = dayData.available.map(name => {
+                const note = dayData.notes && dayData.notes[name];
+                return note ? `${name} (${note})` : name;
+            });
+            const unavailNamesList = dayData.unavailable.map(name => {
+                const note = dayData.notes && dayData.notes[name];
+                return note ? `${name} (${note})` : name;
+            });
+
+            const availNames = availNamesList.length > 0 ? availNamesList.join(', ') : '-';
+            const unavailNames = unavailNamesList.length > 0 ? unavailNamesList.join(', ') : '-';
 
             const sectAvail = cell.querySelector('.section-available');
             sectAvail.querySelector('.section-title').innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> Available (${numAvailable}):`;
@@ -258,6 +281,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Send Chat Message Handler ---
     if (currentAttendeeId && sendChatBtn && chatInput) {
         function sendChatMessage() {
+            if (roomData && roomData.locked) {
+                showToast("Chat board is locked by creator.", "error");
+                return;
+            }
             const text = chatInput.value.trim();
             if (!text) return;
 
@@ -297,8 +324,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const dayCell = e.target.closest('.clickable-day');
             if (!dayCell) return;
 
+            if (roomData && roomData.locked) {
+                showToast("Calendar is locked. Editing availability is disabled.", "error");
+                return;
+            }
+
             const day = dayCell.getAttribute('data-day');
             const dateStr = dayCell.getAttribute('data-date-str');
+            
+            const paintNoteInput = document.getElementById('paintNote');
+            const noteText = paintNoteInput ? paintNoteInput.value.trim() : '';
 
             // Visual optimistic UI update before server responds to feel snappingly fast
             dayCell.classList.remove('day-marked-available', 'day-marked-unavailable');
@@ -317,7 +352,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({
                     day: day,
                     date_str: dateStr, // Send exact date string for robust multi-month schedules
-                    status: activePaintMode
+                    status: activePaintMode,
+                    note: noteText
                 })
             })
             .then(res => res.json())
@@ -447,9 +483,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <div class="d-flex align-center gap-sm">
                         <span class="result-meta badge bg-emerald">${item.count}/${totalPeople} Available</span>
-                        <button class="btn btn-sm btn-secondary btn-vote ${hasVoted ? 'voted' : ''}" data-date-str="${item.dateStr}" style="padding: 6px 12px; font-size: 0.8rem; ${hasVoted ? 'background-color: var(--violet); color: #fff; border-color: var(--violet);' : ''}">
-                            <i class="fa-solid fa-thumbs-up"></i> Vote <span class="vote-count" style="margin-left: 4px; font-weight: 800;">${voteCount}</span>
-                        </button>
+                        <div class="d-flex align-center gap-xs">
+                            <button class="btn btn-sm btn-secondary btn-ics" data-date-str="${item.dateStr}" title="Download ICS Calendar Invite" style="padding: 6px 10px; font-size: 0.8rem;">
+                                <i class="fa-solid fa-download text-emerald"></i> ICS
+                            </button>
+                            <button class="btn btn-sm btn-secondary btn-gcal" data-date-str="${item.dateStr}" title="Add to Google Calendar" style="padding: 6px 10px; font-size: 0.8rem;">
+                                <i class="fa-solid fa-calendar-plus text-violet"></i> Google
+                            </button>
+                            <button class="btn btn-sm btn-secondary btn-vote ${hasVoted ? 'voted' : ''}" data-date-str="${item.dateStr}" style="padding: 6px 12px; font-size: 0.8rem; ${hasVoted ? 'background-color: var(--violet); color: #fff; border-color: var(--violet);' : ''}">
+                                <i class="fa-solid fa-thumbs-up"></i> Vote <span class="vote-count" style="margin-left: 4px; font-weight: 800;">${voteCount}</span>
+                            </button>
+                        </div>
                     </div>
                 `;
                 perfectDatesList.appendChild(row);
@@ -497,9 +541,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             <span class="badge" style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">${percentage}% Free</span>
                             <span class="text-xs text-secondary">(${item.available} <i class="fa-solid fa-check text-emerald"></i>, ${item.unavailable} <i class="fa-solid fa-xmark text-rose"></i>)</span>
                         </span>
-                        <button class="btn btn-sm btn-secondary btn-vote ${hasVoted ? 'voted' : ''}" data-date-str="${item.dateStr}" style="padding: 6px 12px; font-size: 0.8rem; ${hasVoted ? 'background-color: var(--violet); color: #fff; border-color: var(--violet);' : ''}">
-                            <i class="fa-solid fa-thumbs-up"></i> Vote <span class="vote-count" style="margin-left: 4px; font-weight: 800;">${voteCount}</span>
-                        </button>
+                        <div class="d-flex align-center gap-xs">
+                            <button class="btn btn-sm btn-secondary btn-ics" data-date-str="${item.dateStr}" title="Download ICS Calendar Invite" style="padding: 6px 10px; font-size: 0.8rem;">
+                                <i class="fa-solid fa-download text-emerald"></i> ICS
+                            </button>
+                            <button class="btn btn-sm btn-secondary btn-gcal" data-date-str="${item.dateStr}" title="Add to Google Calendar" style="padding: 6px 10px; font-size: 0.8rem;">
+                                <i class="fa-solid fa-calendar-plus text-violet"></i> Google
+                            </button>
+                            <button class="btn btn-sm btn-secondary btn-vote ${hasVoted ? 'voted' : ''}" data-date-str="${item.dateStr}" style="padding: 6px 12px; font-size: 0.8rem; ${hasVoted ? 'background-color: var(--violet); color: #fff; border-color: var(--violet);' : ''}">
+                                <i class="fa-solid fa-thumbs-up"></i> Vote <span class="vote-count" style="margin-left: 4px; font-weight: 800;">${voteCount}</span>
+                            </button>
+                        </div>
                     </div>
                 `;
                 partialDatesList.appendChild(row);
@@ -517,6 +569,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleVoteToggle(e) {
         const voteBtn = e.target.closest('.btn-vote');
         if (!voteBtn) return;
+
+        if (roomData && roomData.locked) {
+            showToast("Calendar is locked. Voting is disabled.", "error");
+            return;
+        }
 
         const dateStr = voteBtn.getAttribute('data-date-str');
 
@@ -549,9 +606,220 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- Calendar Export & Event Generation Functions ---
+    function downloadICS(dateStr, roomName) {
+        const dateParts = dateStr.split('-');
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+        
+        const startDateFormatted = `${year}${month}${day}`;
+        
+        // Calculate next day
+        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        dateObj.setDate(dateObj.getDate() + 1);
+        const nextYear = dateObj.getFullYear();
+        const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const nextDay = String(dateObj.getDate()).padStart(2, '0');
+        const endDateFormatted = `${nextYear}${nextMonth}${nextDay}`;
+        
+        const uid = `uid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@datesync`;
+        const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//DateSync//Coordinator//EN',
+            'BEGIN:VEVENT',
+            `UID:${uid}`,
+            `DTSTAMP:${timestamp}`,
+            `DTSTART;VALUE=DATE:${startDateFormatted}`,
+            `DTEND;VALUE=DATE:${endDateFormatted}`,
+            `SUMMARY:DateSync Event: ${roomName}`,
+            'DESCRIPTION:Coordinated schedule event from DateSync.',
+            'STATUS:CONFIRMED',
+            'TRANSP:TRANSPARENT',
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+        
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `datesync_event_${dateStr}.ics`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("ICS calendar file downloaded!", "success");
+    }
+
+    function openGoogleCalendar(dateStr, roomName) {
+        const dateParts = dateStr.split('-');
+        const year = dateParts[0];
+        const month = dateParts[1];
+        const day = dateParts[2];
+        
+        const startDateFormatted = `${year}${month}${day}`;
+        
+        // Calculate next day
+        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        dateObj.setDate(dateObj.getDate() + 1);
+        const nextYear = dateObj.getFullYear();
+        const nextMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const nextDay = String(dateObj.getDate()).padStart(2, '0');
+        const endDateFormatted = `${nextYear}${nextMonth}${nextDay}`;
+        
+        const title = encodeURIComponent(`DateSync: ${roomName}`);
+        const dates = `${startDateFormatted}/${endDateFormatted}`;
+        const details = encodeURIComponent(`Coordinated via DateSync calendar coordinator.`);
+        
+        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}`;
+        window.open(gcalUrl, '_blank');
+    }
+
+    function handleCalendarExportClick(e) {
+        const icsBtn = e.target.closest('.btn-ics');
+        const gcalBtn = e.target.closest('.btn-gcal');
+        
+        if (icsBtn) {
+            const dateStr = icsBtn.getAttribute('data-date-str');
+            downloadICS(dateStr, roomData ? roomData.room_name : 'DateSync Event');
+        } else if (gcalBtn) {
+            const dateStr = gcalBtn.getAttribute('data-date-str');
+            openGoogleCalendar(dateStr, roomData ? roomData.room_name : 'DateSync Event');
+        }
+    }
+
+    // --- Update Locked State UI ---
+    function updateLockedStateUI() {
+        const isLocked = roomData && roomData.locked;
+        
+        // Toggle Banner
+        const lockedBanner = document.getElementById('lockedRoomBanner');
+        if (lockedBanner) {
+            if (isLocked) {
+                lockedBanner.classList.remove('d-none');
+            } else {
+                lockedBanner.classList.add('d-none');
+            }
+        }
+        
+        // Calendar locking class
+        if (calendarGrid) {
+            if (isLocked) {
+                calendarGrid.classList.add('calendar-locked');
+            } else {
+                calendarGrid.classList.remove('calendar-locked');
+            }
+        }
+        
+        // Disable chat inputs
+        if (chatInput) chatInput.disabled = isLocked;
+        if (sendChatBtn) sendChatBtn.disabled = isLocked;
+        
+        // Disable bulk actions
+        const bulkPaintAllBtn = document.getElementById('bulkPaintAllBtn');
+        const bulkResetBtn = document.getElementById('bulkResetBtn');
+        if (bulkPaintAllBtn) bulkPaintAllBtn.disabled = isLocked;
+        if (bulkResetBtn) bulkResetBtn.disabled = isLocked;
+        
+        // Disable paint mode selectors
+        const paintModeBtns = document.querySelectorAll('.paint-mode-btn');
+        paintModeBtns.forEach(btn => {
+            if (isLocked) {
+                btn.classList.add('disabled-locked');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            } else {
+                btn.classList.remove('disabled-locked');
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
+            }
+        });
+
+        // Disable text input note fields
+        const paintNoteInput = document.getElementById('paintNote');
+        if (paintNoteInput) paintNoteInput.disabled = isLocked;
+
+        // Disable/Dim vote buttons
+        const voteBtns = document.querySelectorAll('.btn-vote');
+        voteBtns.forEach(btn => {
+            if (isLocked) {
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+            }
+        });
+    }
+
+    // --- Bulk Paint Actions ---
+    const bulkPaintAllBtn = document.getElementById('bulkPaintAllBtn');
+    const bulkResetBtn = document.getElementById('bulkResetBtn');
+    if (bulkPaintAllBtn) {
+        bulkPaintAllBtn.addEventListener('click', function () {
+            if (roomData && roomData.locked) {
+                showToast("Calendar is locked by creator.", "error");
+                return;
+            }
+            fetch(`/room/${roomCode}/paint-bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'available' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("All days marked as available!", "success");
+                    fetchAndRenderData();
+                } else {
+                    showToast(data.error || "Failed to mark all days.", "error");
+                }
+            })
+            .catch(err => {
+                console.error("Bulk paint error:", err);
+                showToast("Network error during bulk paint.", "error");
+            });
+        });
+    }
+
+    if (bulkResetBtn) {
+        bulkResetBtn.addEventListener('click', function () {
+            if (roomData && roomData.locked) {
+                showToast("Calendar is locked by creator.", "error");
+                return;
+            }
+            fetch(`/room/${roomCode}/paint-bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'none' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("All markings cleared!", "success");
+                    fetchAndRenderData();
+                } else {
+                    showToast(data.error || "Failed to reset markings.", "error");
+                }
+            })
+            .catch(err => {
+                console.error("Bulk reset error:", err);
+                showToast("Network error during bulk reset.", "error");
+            });
+        });
+    }
+
     // Delegate click listeners to the results lists
     perfectDatesList.addEventListener('click', handleVoteToggle);
     partialDatesList.addEventListener('click', handleVoteToggle);
+    perfectDatesList.addEventListener('click', handleCalendarExportClick);
+    partialDatesList.addEventListener('click', handleCalendarExportClick);
 
     function isDrawerOpen() {
         return !resultsDrawer.classList.contains('hide-drawer');

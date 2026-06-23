@@ -38,6 +38,17 @@
         </div>
     </div>
 
+    <!-- Locked Calendar Alert Banner -->
+    <div class="glass-card fade-in-up mt-sm d-none" id="lockedRoomBanner" style="border-left: 5px solid var(--rose); background: rgba(239, 45, 86, 0.08); padding: 16px 20px; margin-bottom: 20px;">
+        <div class="d-flex align-center gap-sm">
+            <i class="fa-solid fa-lock text-danger" style="font-size: 1.3rem; color: var(--rose);"></i>
+            <div>
+                <h4 style="color: var(--rose); font-weight: 700; margin-bottom: 2px;">Calendar Locked / Frozen</h4>
+                <p class="text-xs text-secondary" style="margin: 0; color: var(--text-secondary);">The creator has locked this room's availabilities. All edits, bulk painting, voting, and chat message boards are frozen.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main grid layout: Sidebar on the left, Calendar on the right -->
     <div class="room-main-grid">
         <!-- LEFT: Sidebar -->
@@ -128,6 +139,22 @@
                                 <span class="paint-color bg-clear"><i class="fa-solid fa-eraser"></i></span>
                                 <span>Clear / Eraser</span>
                                 <i class="fa-solid fa-check check-indicator"></i>
+                            </button>
+                        </div>
+
+                        <!-- Optional Notes Input -->
+                        <div class="paint-note-wrapper mt-sm" id="paintNoteWrapper">
+                            <label for="paintNote" style="font-size: 0.8rem; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;"><i class="fa-solid fa-pen-nib text-glow"></i> Attach Note (Optional):</label>
+                            <input type="text" id="paintNote" placeholder="e.g. Busy until 3 PM, Remote" maxlength="200" style="padding: 8px 10px; font-size: 0.8rem; width: 100%;">
+                        </div>
+
+                        <!-- Bulk Paint Actions -->
+                        <div class="bulk-paint-actions mt-sm d-flex gap-sm">
+                            <button type="button" class="btn btn-sm btn-secondary btn-full" id="bulkPaintAllBtn" title="Mark all days as Available">
+                                <i class="fa-solid fa-check-double"></i> Paint All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary btn-full text-danger" id="bulkResetBtn" title="Reset all your markings">
+                                <i class="fa-solid fa-trash-can"></i> Reset
                             </button>
                         </div>
                     </div>

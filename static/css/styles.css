@@ -1785,3 +1785,16 @@ select option {
     background-color: rgba(255, 255, 255, 0.85);
 }
 
+/* Locked Calendar UI overlays and disabled styles */
+.calendar-locked .clickable-day {
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+.calendar-locked .clickable-day:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.disabled-locked {
+    cursor: not-allowed !important;
+}
+

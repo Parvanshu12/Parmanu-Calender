@@ -41,6 +41,7 @@ class Room(db.Model):
     end_date = db.Column(db.String(10), nullable=True)    # YYYY-MM-DD (for type='range')
     viewer_password_hash = db.Column(db.String(255), nullable=False)
     creator_password_hash = db.Column(db.String(255), nullable=False)
+    locked = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     attendees = db.relationship('Attendee', backref='room', lazy=True, cascade="all, delete-orphan")
@@ -64,6 +65,7 @@ class Availability(db.Model):
     attendee_id = db.Column(db.Integer, db.ForeignKey('attendees.id'), nullable=False)
     date_str = db.Column(db.String(10), nullable=False)  # YYYY-MM-DD
     status = db.Column(db.String(20), nullable=False)    # 'available' or 'unavailable'
+    note = db.Column(db.String(200), nullable=True)
 
 class Vote(db.Model):
     __tablename__ = 'votes'
@@ -429,6 +431,23 @@ def admin_logout(code):
     flash("Logged out of Creator Admin session.", "info")
     return redirect(url_for('room_dashboard', code=code))
 
+@app.route('/room/<code>/admin/lock', methods=['POST'])
+def toggle_room_lock(code):
+    code = code.upper()
+    room = Room.query.filter_by(code=code).first_or_404()
+
+    if not session.get(f'creator_auth_{code}'):
+        flash("Unauthorized Creator session expired.", "error")
+        return redirect(url_for('room_admin', code=code))
+
+    locked_val = request.form.get('locked') == 'true'
+    room.locked = locked_val
+    db.session.commit()
+    
+    status_str = "locked" if locked_val else "unlocked"
+    flash(f"Room calendar has been successfully {status_str}.", "success")
+    return redirect(url_for('room_admin', code=code))
+
 # --- AJAX APIs ---
 
 @app.route('/room/<code>/availability', methods=['POST'])
@@ -439,6 +458,9 @@ def update_availability(code):
     if not session.get(f'room_auth_{code}'):
         return jsonify({"success": False, "error": "Unauthorized room access"}), 403
 
+    if room.locked:
+        return jsonify({"success": False, "error": "Calendar is locked by creator."}), 403
+
     attendee_id = session.get(f'attendee_id_{code}')
     if not attendee_id:
         return jsonify({"success": False, "error": "Attendee editor session expired. Please log in again."}), 401
@@ -446,6 +468,9 @@ def update_availability(code):
     data = request.get_json() or {}
     day = data.get('day')
     status = data.get('status') 
+    note = data.get('note', '').strip()
+    if len(note) > 200:
+        note = note[:200]
 
     if not day or status not in ['available', 'unavailable', 'none']:
         return jsonify({"success": False, "error": "Invalid parameters"}), 400
@@ -473,12 +498,92 @@ def update_availability(code):
     else:
         if availability:
             availability.status = status
+            availability.note = note
         else:
-            availability = Availability(attendee_id=attendee_id, date_str=date_str, status=status)
+            availability = Availability(attendee_id=attendee_id, date_str=date_str, status=status, note=note)
             db.session.add(availability)
         db.session.commit()
 
     return jsonify({"success": True})
+
+@app.route('/room/<code>/paint-bulk', methods=['POST'])
+def paint_bulk(code):
+    code = code.upper()
+    room = Room.query.filter_by(code=code).first_or_404()
+
+    if not session.get(f'room_auth_{code}'):
+        return jsonify({"success": False, "error": "Unauthorized room access"}), 403
+
+    if room.locked:
+        return jsonify({"success": False, "error": "Calendar is locked by creator."}), 403
+
+    attendee_id = session.get(f'attendee_id_{code}')
+    if not attendee_id:
+        return jsonify({"success": False, "error": "Attendee editor session expired. Please log in again."}), 401
+
+    data = request.get_json() or {}
+    status = data.get('status') # 'available' or 'none'
+
+    if status not in ['available', 'none']:
+        return jsonify({"success": False, "error": "Invalid parameters"}), 400
+
+    # Fetch all dates in range/month
+    months_structure = generate_calendar_structure(room)
+    all_date_strs = []
+    for month_obj in months_structure:
+        for d in month_obj["days"]:
+            if not d["disabled"]:
+                all_date_strs.append(d["date_str"])
+
+    # Clear existing availabilities for this attendee
+    Availability.query.filter_by(attendee_id=attendee_id).delete()
+
+    if status == 'available':
+        for date_str in all_date_strs:
+            new_avail = Availability(
+                attendee_id=attendee_id,
+                date_str=date_str,
+                status='available',
+                note=''
+            )
+            db.session.add(new_avail)
+
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route('/room/<code>/vote', methods=['POST'])
+def toggle_vote(code):
+    code = code.upper()
+    room = Room.query.filter_by(code=code).first_or_404()
+
+    if not session.get(f'room_auth_{code}'):
+        return jsonify({"success": False, "error": "Unauthorized room access"}), 403
+
+    if room.locked:
+        return jsonify({"success": False, "error": "Calendar is locked by creator."}), 403
+
+    attendee_id = session.get(f'attendee_id_{code}')
+    if not attendee_id:
+        return jsonify({"success": False, "error": "Attendee editor session expired. Please log in again."}), 401
+
+    data = request.get_json() or {}
+    date_str = data.get('date_str')
+
+    if not date_str:
+        return jsonify({"success": False, "error": "Missing date_str parameter"}), 400
+
+    vote = Vote.query.filter_by(attendee_id=attendee_id, date_str=date_str).first()
+    
+    if vote:
+        db.session.delete(vote)
+        status = 'removed'
+    else:
+        vote = Vote(attendee_id=attendee_id, date_str=date_str)
+        db.session.add(vote)
+        status = 'added'
+
+    db.session.commit()
+    return jsonify({"success": True, "status": status})
 
 @app.route('/room/<code>/message', methods=['POST'])
 def send_chat(code):
@@ -487,6 +592,9 @@ def send_chat(code):
 
     if not session.get(f'room_auth_{code}'):
         return jsonify({"success": False, "error": "Unauthorized"}), 403
+
+    if room.locked:
+        return jsonify({"success": False, "error": "Room chat is locked by creator."}), 403
 
     # Check if attendee is logged in
     attendee_id = session.get(f'attendee_id_{code}')
@@ -533,7 +641,7 @@ def get_room_data(code):
     for month_obj in months_structure:
         for d in month_obj["days"]:
             if not d["disabled"]:
-                avail_dict[d["date_str"]] = {"available": [], "unavailable": []}
+                avail_dict[d["date_str"]] = {"available": [], "unavailable": [], "notes": {}}
                 votes_dict[d["date_str"]] = []
 
     # Query all availabilities for this room
@@ -547,6 +655,9 @@ def get_room_data(code):
                 avail_dict[avail.date_str]["available"].append(attendee_name)
             elif avail.status == 'unavailable':
                 avail_dict[avail.date_str]["unavailable"].append(attendee_name)
+            
+            if avail.note:
+                avail_dict[avail.date_str]["notes"][attendee_name] = avail.note
 
     # Query all votes for this room
     votes = db.session.query(Vote, Attendee.name).join(
@@ -573,15 +684,35 @@ def get_room_data(code):
         "year": room.year,
         "start_date": room.start_date,
         "end_date": room.end_date,
+        "locked": room.locked,
         "attendees": attendee_list,
         "availabilities": avail_dict,
         "votes": votes_dict,
         "messages": msg_list
     })
 
-# --- Database Initialization ---
+# --- Database Initialization & Migration Safety Checks ---
+def verify_database_schema():
+    engine = db.engine
+    inspector = db.inspect(engine)
+    
+    # Check if 'rooms' table has 'locked' column
+    rooms_columns = [col['name'] for col in inspector.get_columns('rooms')]
+    if 'locked' not in rooms_columns:
+        with db.engine.begin() as conn:
+            conn.execute(db.text("ALTER TABLE rooms ADD COLUMN locked BOOLEAN DEFAULT FALSE"))
+        print("Migration: Added 'locked' column to 'rooms' table.")
+        
+    # Check if 'availabilities' table has 'note' column
+    avail_columns = [col['name'] for col in inspector.get_columns('availabilities')]
+    if 'note' not in avail_columns:
+        with db.engine.begin() as conn:
+            conn.execute(db.text("ALTER TABLE availabilities ADD COLUMN note VARCHAR(200)"))
+        print("Migration: Added 'note' column to 'availabilities' table.")
+
 with app.app_context():
     db.create_all()
+    verify_database_schema()
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
